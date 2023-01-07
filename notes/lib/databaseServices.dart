@@ -9,7 +9,7 @@ class DatabaseServices {
       join(await getDatabasesPath(), 'notes_database.db'),
       onCreate: (db, version) {
         return db.execute(
-          'CREATE TABLE notes(id INTEGER PRIMARY KEY, nazwa TEXT, data TEXT, tresc TEXT, stan INTEGER)',
+          'CREATE TABLE notes(id INTEGER PRIMARY KEY AUTOINCREMENT, nazwa TEXT, data TEXT, tresc TEXT, stan INTEGER)',
         );
       },
       version: 1,

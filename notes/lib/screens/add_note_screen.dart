@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:notes/databaseServices.dart';
 import 'package:notes/models/note.dart';
 
 class AddingNoteScreen extends StatefulWidget {
@@ -34,9 +35,21 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
     }
   }
 
-  void trySubmit() {}
+  void trySubmit() async {
+    DatabaseServices db = DatabaseServices();
+    if (widget.isNewNote) {
+      await db.insertNote(Note(
+          nazwa: nazwaInputController.text,
+          data: DateTime.now().toString(),
+          stan: 1));
+    } else {}
+    Navigator.of(context).pop();
+  }
 
-  Widget inputField(TextEditingController controller, int lines,) {
+  Widget inputField(
+    TextEditingController controller,
+    int lines,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30),
       child: TextField(
@@ -44,13 +57,13 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
         controller: controller,
         decoration: InputDecoration(
             enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(
+              borderSide: const BorderSide(
                 color: Colors.white,
               ),
               borderRadius: BorderRadius.circular(12),
             ),
             focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(
+              borderSide: const BorderSide(
                 color: Colors.blue,
               ),
               borderRadius: BorderRadius.circular(12),
@@ -61,28 +74,19 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
     );
   }
 
-  Widget readOnlyField() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30),
-      child: TextField(
-        readOnly: true,
-        decoration: InputDecoration(
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                color: Colors.white,
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                color: Colors.blue,
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            fillColor: Colors.grey[200],
-            filled: true),
-      ),
-    );
+  Widget readOnlyField(String text) {
+    return Container(
+        width: MediaQuery.of(context).size.width,
+        margin: const EdgeInsets.symmetric(horizontal: 30),
+        padding: const EdgeInsets.symmetric(vertical: 15),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: Colors.grey[200],
+        ),
+        child: Align(
+          alignment: Alignment.center,
+          child: Text(text),
+        ));
   }
 
   Widget titleOfField(String title) {
@@ -96,30 +100,71 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
     );
   }
 
+  Widget confirmButton() {
+    return Container(
+      alignment: Alignment.center,
+      child: ElevatedButton.icon(
+        icon: const Icon(
+          Icons.send,
+          color: Colors.white,
+          size: 20,
+        ),
+        style: ElevatedButton.styleFrom(
+          primary: Colors.blue,
+          onPrimary: Colors.white,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
+        ),
+        onPressed: () => trySubmit(),
+        label: widget.isNewNote
+            ? const Text('Dodaj notatke !')
+            : const Text('Zaktualizuj notatkę !'),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: widget.isNewNote
-            ? const Text('Adding Note')
-            : const Text('Editing Note'),
-        elevation: 5,
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          titleOfField("Nazwa"),
-          inputField(nazwaInputController, 1),
-          const SizedBox(
-            height: 10,
-          ),
-          titleOfField("Tresc"),
-          inputField(trescInputController, 4),
-          if (widget.isNewNote) ...[
-            titleOfField("Data"),
-            titleOfField("Stan"),
-            ]
-        ],
+    return SafeArea(
+      child: Scaffold(
+        resizeToAvoidBottomInset: true,
+        appBar: AppBar(
+          title: widget.isNewNote
+              ? const Text('Adding Note')
+              : const Text('Editing Note'),
+          elevation: 5,
+        ),
+        body: Stack(
+          children: [
+            Container(
+              height: MediaQuery.of(context).size.height,
+              alignment: Alignment.center,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    titleOfField("Nazwa"),
+                    inputField(nazwaInputController, 1),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    titleOfField("Tresc"),
+                    inputField(trescInputController, 4),
+                    if (!widget.isNewNote) ...[
+                      titleOfField("Data"),
+                      readOnlyField(data),
+                      titleOfField("Stan"),
+                      readOnlyField(stan.toString()),
+                    ],
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    confirmButton()
+                  ],
+                ),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

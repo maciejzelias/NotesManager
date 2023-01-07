@@ -14,6 +14,7 @@ class MyApp extends StatelessWidget {
     return const MaterialApp(
       title: 'Notes App',
       home: NotesList(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }

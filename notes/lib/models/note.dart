@@ -6,7 +6,7 @@ class Note {
   int stan;
 
   Note(
-      {required this.id,
+      {this.id,
       required this.nazwa,
       required this.data,
       this.tresc,
