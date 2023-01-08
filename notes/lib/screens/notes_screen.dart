@@ -53,11 +53,11 @@ class _NotesListState extends State<NotesList> {
           Note note = notesList[index];
           note.stan = 0;
           db.updateNote(note);
-          await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AddingNoteScreen(true),
-              ));
+          // await Navigator.push(
+          //     context,
+          //     MaterialPageRoute(
+          //       builder: (context) => AddingNoteScreen(true),
+          //     ));
           fetchNotes();
         },
         icon: const Icon(

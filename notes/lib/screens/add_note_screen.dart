@@ -59,6 +59,7 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30),
       child: TextField(
+        key: const Key('note-name-field'),
         maxLines: lines,
         controller: controller,
         decoration: InputDecoration(
@@ -110,6 +111,7 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
     return Container(
       alignment: Alignment.center,
       child: ElevatedButton.icon(
+        key: const Key('add-note-button'),
         icon: const Icon(
           Icons.send,
           color: Colors.white,
