@@ -33,13 +33,37 @@ class _NotesListState extends State<NotesList> {
     });
   }
 
-  Widget archiveNoteButton(int index) {
+  Widget archiveNoteButton(int index, BuildContext ctx) {
     return IconButton(
-        onPressed: () {
-          setState(() {
-            Note note = notesList[index];
-            note.stan = 2;
-          });
+        onPressed: () async {
+          final value = await showDialog<bool>(
+              context: ctx,
+              builder: (context) {
+                return AlertDialog(
+                  content: Text('Are you sure you want to archieve that note?'),
+                  actions: <Widget>[
+                    TextButton(
+                      child: Text('No'),
+                      onPressed: () {
+                        Navigator.of(context).pop(false);
+                      },
+                    ),
+                    TextButton(
+                      child: Text('Yes'),
+                      onPressed: () {
+                        Navigator.of(context).pop(true);
+                      },
+                    ),
+                  ],
+                );
+              });
+          if (value == true) {
+            setState(() {
+              Note note = notesList[index];
+              note.stan = 2;
+              db.updateNote(note);
+            });
+          }
         },
         icon: const Icon(
           Icons.delete,
@@ -47,17 +71,17 @@ class _NotesListState extends State<NotesList> {
         ));
   }
 
-  Widget editNoteButton(int index) {
+  Widget editNoteButton(int index, BuildContext ctx) {
     return IconButton(
         onPressed: () async {
           Note note = notesList[index];
           note.stan = 0;
           db.updateNote(note);
-          // await Navigator.push(
-          //     context,
-          //     MaterialPageRoute(
-          //       builder: (context) => AddingNoteScreen(true),
-          //     ));
+          await Navigator.push(
+              ctx,
+              MaterialPageRoute(
+                builder: (context) => AddingNoteScreen.second(false, note),
+              ));
           fetchNotes();
         },
         icon: const Icon(
@@ -98,9 +122,15 @@ class _NotesListState extends State<NotesList> {
               child: Column(
                 children: [
                   NoteCard(note: notesList[index]),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [archiveNoteButton(index), editNoteButton(index)],
+                  Visibility(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        archiveNoteButton(index, context),
+                        editNoteButton(index, context)
+                      ],
+                    ),
+                    visible: notesList[index].stan != 2,
                   )
                 ],
               ),

@@ -16,7 +16,7 @@ class AddingNoteScreen extends StatefulWidget {
 
 class _AddingNoteScreenState extends State<AddingNoteScreen> {
   String nazwa = '';
-  String tresc = '';
+  String? tresc = '';
   String data = '';
   int? stan;
 
@@ -25,15 +25,15 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
 
   @override
   void initState() {
-    super.initState();
-    if (widget.isNewNote == false) {
+    if (!widget.isNewNote) {
       nazwa = widget.note!.nazwa;
-      tresc = widget.note!.tresc!;
+      tresc = widget.note!.tresc;
       data = widget.note!.data;
       stan = widget.note!.stan;
       nazwaInputController.text = nazwa;
-      trescInputController.text = tresc;
+      trescInputController.text = tresc ?? "";
     }
+    super.initState();
   }
 
   void trySubmit() async {
@@ -48,18 +48,43 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
               : null,
           data: formattedDate,
           stan: 1));
-    } else {}
+    } else {
+      widget.note!.stan = 1;
+      widget.note!.nazwa = nazwaInputController.text;
+      widget.note!.tresc =
+          trescInputController.text != '' ? trescInputController.text : null;
+      await db.updateNote(widget.note!);
+    }
     Navigator.of(context).pop();
   }
 
-  Widget inputField(
-    TextEditingController controller,
-    int lines,
-  ) {
+  void leaveTemplate() async {
+    DatabaseServices db = DatabaseServices();
+    if (widget.isNewNote) {
+      DateTime now = DateTime.now();
+      String formattedDate = DateFormat('yyyy-MM-dd - kk:mm').format(now);
+      await db.insertNote(Note(
+          nazwa: nazwaInputController.text,
+          tresc: trescInputController.text != ''
+              ? trescInputController.text
+              : null,
+          data: formattedDate,
+          stan: 0));
+    } else {
+      widget.note!.stan = 0;
+      widget.note!.nazwa = nazwaInputController.text;
+      widget.note!.tresc =
+          trescInputController.text != '' ? trescInputController.text : null;
+      await db.updateNote(widget.note!);
+    }
+    Navigator.of(context).pop();
+  }
+
+  Widget inputField(TextEditingController controller, int lines, String key) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30),
       child: TextField(
-        key: const Key('note-name-field'),
+        key: Key(key),
         maxLines: lines,
         controller: controller,
         decoration: InputDecoration(
@@ -133,47 +158,54 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        resizeToAvoidBottomInset: true,
-        appBar: AppBar(
-          title: widget.isNewNote
-              ? const Text('Adding Note')
-              : const Text('Editing Note'),
-          elevation: 5,
-        ),
-        body: Stack(
-          children: [
-            Container(
-              height: MediaQuery.of(context).size.height,
-              alignment: Alignment.center,
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    titleOfField("Nazwa"),
-                    inputField(nazwaInputController, 1),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    titleOfField("Tresc"),
-                    inputField(trescInputController, 4),
-                    if (!widget.isNewNote) ...[
-                      titleOfField("Data"),
-                      readOnlyField(data),
-                      titleOfField("Stan"),
-                      readOnlyField(stan.toString()),
+    return WillPopScope(
+      child: SafeArea(
+        child: Scaffold(
+          resizeToAvoidBottomInset: true,
+          appBar: AppBar(
+            title: widget.isNewNote
+                ? const Text('Adding Note')
+                : const Text('Editing Note'),
+            elevation: 5,
+          ),
+          body: Stack(
+            children: [
+              Container(
+                height: MediaQuery.of(context).size.height,
+                alignment: Alignment.center,
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      titleOfField("Nazwa"),
+                      inputField(nazwaInputController, 1, 'note-name-field'),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      titleOfField("Tresc"),
+                      inputField(
+                          trescInputController, 4, 'note-description-field'),
+                      if (!widget.isNewNote) ...[
+                        titleOfField("Data"),
+                        readOnlyField(data),
+                        titleOfField("Stan"),
+                        readOnlyField(stan.toString()),
+                      ],
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      confirmButton()
                     ],
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    confirmButton()
-                  ],
+                  ),
                 ),
-              ),
-            )
-          ],
+              )
+            ],
+          ),
         ),
       ),
+      onWillPop: () async {
+        leaveTemplate();
+        return false;
+      },
     );
   }
 }

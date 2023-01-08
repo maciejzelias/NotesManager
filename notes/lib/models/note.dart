@@ -1,8 +1,8 @@
 class Note {
   final int? id;
-  final String nazwa;
+  String nazwa;
   final String data;
-  final String? tresc;
+  String? tresc;
   int stan;
 
   Note(
