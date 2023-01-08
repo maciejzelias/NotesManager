@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:notes/databaseServices.dart';
 import 'package:notes/models/note.dart';
 
@@ -38,9 +39,14 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
   void trySubmit() async {
     DatabaseServices db = DatabaseServices();
     if (widget.isNewNote) {
+      DateTime now = DateTime.now();
+      String formattedDate = DateFormat('yyyy-MM-dd - kk:mm').format(now);
       await db.insertNote(Note(
           nazwa: nazwaInputController.text,
-          data: DateTime.now().toString(),
+          tresc: trescInputController.text != ''
+              ? trescInputController.text
+              : null,
+          data: formattedDate,
           stan: 1));
     } else {}
     Navigator.of(context).pop();

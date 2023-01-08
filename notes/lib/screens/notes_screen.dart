@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:notes/widgets/note_card.dart';
+import 'package:path/path.dart';
 
 import '../databaseServices.dart';
 import '../models/note.dart';
@@ -12,7 +14,71 @@ class NotesList extends StatefulWidget {
 }
 
 class _NotesListState extends State<NotesList> {
+  List<Note> notesList = [];
+  bool isLoading = false;
   DatabaseServices db = DatabaseServices();
+  @override
+  void initState() {
+    fetchNotes();
+    super.initState();
+  }
+
+  Future fetchNotes() async {
+    setState(() {
+      isLoading = true;
+    });
+    notesList = await db.getAllNotes();
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  Widget archiveNoteButton(int index) {
+    return IconButton(
+        onPressed: () {
+          setState(() {
+            Note note = notesList[index];
+            note.stan = 2;
+          });
+        },
+        icon: const Icon(
+          Icons.delete,
+          color: Colors.white,
+        ));
+  }
+
+  Widget editNoteButton(int index) {
+    return IconButton(
+        onPressed: () async {
+          Note note = notesList[index];
+          note.stan = 0;
+          db.updateNote(note);
+          await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AddingNoteScreen(true),
+              ));
+          fetchNotes();
+        },
+        icon: const Icon(
+          Icons.edit,
+          color: Colors.white,
+        ));
+  }
+
+  Color getColorOfNote(int stan) {
+    switch (stan) {
+      case 0:
+        return const Color.fromARGB(255, 64, 148, 245);
+      case 1:
+        return const Color.fromARGB(255, 23, 129, 32);
+      case 2:
+        return const Color.fromARGB(166, 244, 6, 6);
+      default:
+        return const Color.fromARGB(255, 255, 255, 255);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,37 +86,36 @@ class _NotesListState extends State<NotesList> {
         title: const Text("Notes Manager"),
       ),
       body: Center(
-        child: FutureBuilder<List<Note>>(
-          future: db.getAllNotes(),
-          builder: (BuildContext buildContext, AsyncSnapshot<List<Note>> snap) {
-            if (!snap.hasData) {
-              return const Center(
-                child: Text('Loading'),
-              );
-            }
-            return snap.data!.isEmpty
-                ? const Center(
-                    child: Text("There are no notes in database"),
+        child: ListView.builder(
+          itemCount: notesList.length,
+          itemBuilder: ((context, index) {
+            return Container(
+              margin: EdgeInsets.symmetric(
+                  vertical: MediaQuery.of(context).size.height * 0.02,
+                  horizontal: MediaQuery.of(context).size.width * 0.2),
+              key: Key(notesList[index].id.toString()),
+              color: getColorOfNote(notesList[index].stan),
+              child: Column(
+                children: [
+                  NoteCard(note: notesList[index]),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [archiveNoteButton(index), editNoteButton(index)],
                   )
-                : ListView(
-                    children: snap.data!.map((note) {
-                      return Center(
-                        child: ListTile(
-                          title: Text(note.nazwa),
-                        ),
-                      );
-                    }).toList(),
-                  );
-          },
+                ],
+              ),
+            );
+          }),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => AddingNoteScreen(true),
               ));
+          fetchNotes();
         },
         child: const Icon(Icons.add),
       ),
