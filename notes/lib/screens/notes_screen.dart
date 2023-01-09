@@ -16,49 +16,43 @@ class NotesList extends StatefulWidget {
 }
 
 class _NotesListState extends State<NotesList> {
-  List<Note> notesList = [];
-  List<Note> filteredNoteList = [];
-  String filteringText = '';
-  String prevDate = "";
-  stateOfNote noteFilteringState = stateOfNote.all;
-  List<stateOfNote> states = [
+  List<Note> _notesList = [];
+  List<Note> _filteredNotesList = [];
+  String _filteringText = '';
+  String _prevDate = "";
+  stateOfNote _noteFilterinState = stateOfNote.all;
+  List<stateOfNote> _states = [
     stateOfNote.all,
     stateOfNote.accepted,
     stateOfNote.archived,
     stateOfNote.draft
   ];
-  TextEditingController dateInput = TextEditingController();
-  bool isLoading = false;
-  DatabaseServices db = DatabaseServices();
+  TextEditingController _dateInputController = TextEditingController();
+  DatabaseServices _db = DatabaseServices();
   @override
   void initState() {
     DateTime now = DateTime.now();
     String formattedDate = DateFormat('yyyy-MM-dd').format(now);
-    dateInput.text = formattedDate;
+    _dateInputController.text = formattedDate;
     fetchNotes();
     super.initState();
   }
 
   Future fetchNotes() async {
-    setState(() {
-      isLoading = true;
-    });
-    notesList = await db.getAllNotes();
+    _notesList = await _db.getAllNotes();
     filterList();
-    setState(() {
-      isLoading = false;
-    });
+    setState(() {});
   }
 
   void filterList() {
-    filteredNoteList = notesList;
-    if (filteringText.length > 2)
+    _filteredNotesList = _notesList;
+    if (_filteringText.length > 2)
       //filtering with name / description
-      filteredNoteList = filteredNoteList.where((note) {
+      _filteredNotesList = _filteredNotesList.where((note) {
         bool isMatched = false;
         String nazwa = note.nazwa;
         String tresc = note.tresc ?? "";
-        String trimmedText = filteringText.trim();
+        String trimmedText = _filteringText.trim();
         if (nazwa.length >= trimmedText.length) {
           String str = nazwa.substring(0, trimmedText.length);
           isMatched = str == trimmedText;
@@ -71,30 +65,30 @@ class _NotesListState extends State<NotesList> {
       }).toList();
 
     //filtering with date
-    if (prevDate != dateInput.text) {
+    if (_prevDate != _dateInputController.text) {
       //preventing sorting by date on every keystroke
-      filteredNoteList = filteredNoteList.where((note) {
+      _filteredNotesList = _filteredNotesList.where((note) {
         String dateWithoutHour = note.data.substring(0, 10);
-        return dateWithoutHour == dateInput.text;
+        return dateWithoutHour == _dateInputController.text;
       }).toList();
-      prevDate = dateInput.text;
+      _prevDate = _dateInputController.text;
     }
 
     //filtering by state
-    switch (noteFilteringState) {
+    switch (_noteFilterinState) {
       case stateOfNote.all:
         break;
       case stateOfNote.accepted:
-        filteredNoteList =
-            filteredNoteList.where((note) => note.stan == 1).toList();
+        _filteredNotesList =
+            _filteredNotesList.where((note) => note.stan == 1).toList();
         break;
       case stateOfNote.draft:
-        filteredNoteList =
-            filteredNoteList.where((note) => note.stan == 0).toList();
+        _filteredNotesList =
+            _filteredNotesList.where((note) => note.stan == 0).toList();
         break;
       case stateOfNote.archived:
-        filteredNoteList =
-            filteredNoteList.where((note) => note.stan == 2).toList();
+        _filteredNotesList =
+            _filteredNotesList.where((note) => note.stan == 2).toList();
         break;
     }
   }
@@ -125,9 +119,9 @@ class _NotesListState extends State<NotesList> {
               });
           if (value == true) {
             setState(() {
-              Note note = filteredNoteList[index];
+              Note note = _filteredNotesList[index];
               note.stan = 2;
-              db.updateNote(note);
+              _db.updateNote(note);
             });
           }
         },
@@ -140,9 +134,9 @@ class _NotesListState extends State<NotesList> {
   Widget editNoteButton(int index, BuildContext ctx) {
     return IconButton(
         onPressed: () async {
-          Note note = filteredNoteList[index];
+          Note note = _filteredNotesList[index];
           note.stan = 0;
-          db.updateNote(note);
+          _db.updateNote(note);
           await Navigator.push(
               ctx,
               MaterialPageRoute(
@@ -173,13 +167,13 @@ class _NotesListState extends State<NotesList> {
     return TextField(
       onChanged: (text) {
         if (text.length > 2) {
-          filteringText = text;
+          _filteringText = text;
           setState(() {
             filterList();
           });
         } else if (text.length == 2) {
-          filteringText = "";
-          // filteredNoteList = notesList;
+          _filteringText = "";
+          // _filteredNotesList = notesList;
           setState(() {
             filterList();
           });
@@ -193,7 +187,7 @@ class _NotesListState extends State<NotesList> {
       children: [
         TextField(
           enabled: false,
-          controller: dateInput,
+          controller: _dateInputController,
           textAlign: TextAlign.center,
         ),
         IconButton(
@@ -201,14 +195,14 @@ class _NotesListState extends State<NotesList> {
           onPressed: () async {
             DateTime? pickedDate = await showDatePicker(
                 context: ctx,
-                initialDate: DateTime.parse(dateInput.text),
+                initialDate: DateTime.parse(_dateInputController.text),
                 firstDate: DateTime(1950),
                 lastDate: DateTime(2100));
             if (pickedDate != null) {
               String formattedDate =
                   DateFormat('yyyy-MM-dd').format(pickedDate);
               setState(() {
-                dateInput.text = formattedDate;
+                _dateInputController.text = formattedDate;
                 filterList();
               });
             }
@@ -227,17 +221,17 @@ class _NotesListState extends State<NotesList> {
             contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
             labelText: 'State',
           ),
-          items: states.map((item) {
+          items: _states.map((item) {
             return DropdownMenuItem(
               child: TileTitle(title: item.toString(), accent: Colors.red),
               value: item.toString(),
             );
           }).toList(),
           onChanged: (value) => setState(() {
-            noteFilteringState = stateOfNote.values.byName(value!);
+            _noteFilterinState = stateOfNote.values.byName(value!);
             filterList();
           }),
-          value: noteFilteringState.toString(),
+          value: _noteFilterinState.toString(),
         ),
       ),
     );
@@ -260,21 +254,21 @@ class _NotesListState extends State<NotesList> {
               ListView.builder(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
-                itemCount: filteredNoteList.length,
+                itemCount: _filteredNotesList.length,
                 itemBuilder: ((context, index) {
                   return Container(
                     margin: EdgeInsets.symmetric(
                         vertical: MediaQuery.of(context).size.height * 0.02,
                         horizontal: MediaQuery.of(context).size.width * 0.2),
-                    key: Key(filteredNoteList[index].id.toString()),
-                    color: getColorOfNote(filteredNoteList[index].stan),
+                    key: Key(_filteredNotesList[index].id.toString()),
+                    color: getColorOfNote(_filteredNotesList[index].stan),
                     child: GestureDetector(
                       onDoubleTap: () async {
-                        Note note = filteredNoteList[index];
-                        if (filteredNoteList[index].stan != 2) {
+                        Note note = _filteredNotesList[index];
+                        if (_filteredNotesList[index].stan != 2) {
                           //normal note - in stan 0 or 1, normal edit performance
                           note.stan = 0;
-                          db.updateNote(note);
+                          _db.updateNote(note);
                           fetchNotes();
                         }
                         await Navigator.push(
@@ -286,7 +280,7 @@ class _NotesListState extends State<NotesList> {
                       },
                       child: Column(
                         children: [
-                          NoteCard(note: filteredNoteList[index]),
+                          NoteCard(note: _filteredNotesList[index]),
                           Visibility(
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -295,7 +289,7 @@ class _NotesListState extends State<NotesList> {
                                 editNoteButton(index, context)
                               ],
                             ),
-                            visible: filteredNoteList[index].stan != 2,
+                            visible: _filteredNotesList[index].stan != 2,
                           )
                         ],
                       ),
@@ -330,9 +324,4 @@ enum stateOfNote {
 
   @override
   String toString() => this.name;
-
-  stateOfNote getStateEnum(String name) {
-    return stateOfNote.values
-        .firstWhere((element) => element.toString() == 'stateOfNote.' + name);
-  }
 }

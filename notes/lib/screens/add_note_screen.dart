@@ -4,46 +4,46 @@ import 'package:notes/databaseServices.dart';
 import 'package:notes/models/note.dart';
 
 class AddingNoteScreen extends StatefulWidget {
-  final bool isNewNote;
-  Note? note;
-  AddingNoteScreen(this.isNewNote);
+  final bool _isNewNote;
+  Note? _note;
+  AddingNoteScreen(this._isNewNote);
 
-  AddingNoteScreen.second(this.isNewNote, this.note);
+  AddingNoteScreen.second(this._isNewNote, this._note);
 
   @override
   State<AddingNoteScreen> createState() => _AddingNoteScreenState();
 }
 
 class _AddingNoteScreenState extends State<AddingNoteScreen> {
-  String nazwa = '';
-  String? tresc = '';
-  String data = '';
-  int stan = 0;
-  bool isPreview = false;
+  String _nazwa = '';
+  String? _tresc = '';
+  String _data = '';
+  int _stan = 0;
+  bool _isPreview = false;
 
   TextEditingController nazwaInputController = TextEditingController();
   TextEditingController trescInputController = TextEditingController();
 
   @override
   void initState() {
-    if (!widget.isNewNote) {
-      nazwa = widget.note!.nazwa;
-      tresc = widget.note!.tresc;
-      data = widget.note!.data;
-      stan = widget.note!.stan;
-      nazwaInputController.text = nazwa;
-      trescInputController.text = tresc ?? "";
+    if (!widget._isNewNote) {
+      _nazwa = widget._note!.nazwa;
+      _tresc = widget._note!.tresc;
+      _data = widget._note!.data;
+      _stan = widget._note!.stan;
+      nazwaInputController.text = _nazwa;
+      trescInputController.text = _tresc ?? "";
     }
-    if (stan == 2) {
+    if (_stan == 2) {
       // preview mode (archived note)
-      isPreview = true;
+      _isPreview = true;
     }
     super.initState();
   }
 
   void trySubmit() async {
     DatabaseServices db = DatabaseServices();
-    if (widget.isNewNote) {
+    if (widget._isNewNote) {
       DateTime now = DateTime.now();
       String formattedDate = DateFormat('yyyy-MM-dd - kk:mm').format(now);
       await db.insertNote(Note(
@@ -54,18 +54,18 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
           data: formattedDate,
           stan: 1));
     } else {
-      widget.note!.stan = 1;
-      widget.note!.nazwa = nazwaInputController.text;
-      widget.note!.tresc =
+      widget._note!.stan = 1;
+      widget._note!.nazwa = nazwaInputController.text;
+      widget._note!.tresc =
           trescInputController.text != '' ? trescInputController.text : null;
-      await db.updateNote(widget.note!);
+      await db.updateNote(widget._note!);
     }
     Navigator.of(context).pop();
   }
 
   void leaveTemplate() async {
     DatabaseServices db = DatabaseServices();
-    if (widget.isNewNote) {
+    if (widget._isNewNote) {
       DateTime now = DateTime.now();
       String formattedDate = DateFormat('yyyy-MM-dd - kk:mm').format(now);
       await db.insertNote(Note(
@@ -76,11 +76,11 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
           data: formattedDate,
           stan: 0));
     } else {
-      widget.note!.stan = 0;
-      widget.note!.nazwa = nazwaInputController.text;
-      widget.note!.tresc =
+      widget._note!.stan = 0;
+      widget._note!.nazwa = nazwaInputController.text;
+      widget._note!.tresc =
           trescInputController.text != '' ? trescInputController.text : null;
-      await db.updateNote(widget.note!);
+      await db.updateNote(widget._note!);
     }
     Navigator.of(context).pop();
   }
@@ -154,7 +154,7 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
         ),
         onPressed: () => trySubmit(),
-        label: widget.isNewNote
+        label: widget._isNewNote
             ? const Text('Dodaj notatke !')
             : const Text('Zaktualizuj notatkę !'),
       ),
@@ -162,7 +162,7 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => isPreview
+  Widget build(BuildContext context) => _isPreview
       ? SafeArea(
           child: Scaffold(
             resizeToAvoidBottomInset: true,
@@ -179,16 +179,16 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
                     child: Column(
                       children: [
                         titleOfField("Nazwa"),
-                        readOnlyField(nazwa),
+                        readOnlyField(_nazwa),
                         const SizedBox(
                           height: 10,
                         ),
                         titleOfField("Tresc"),
-                        readOnlyField(tresc ?? ""),
+                        readOnlyField(_tresc ?? ""),
                         titleOfField("Data"),
-                        readOnlyField(data),
+                        readOnlyField(_data),
                         titleOfField("Stan"),
-                        readOnlyField(stan.toString()),
+                        readOnlyField(_stan.toString()),
                         const SizedBox(
                           height: 10,
                         ),
@@ -205,7 +205,7 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
             child: Scaffold(
               resizeToAvoidBottomInset: true,
               appBar: AppBar(
-                title: widget.isNewNote
+                title: widget._isNewNote
                     ? const Text('Adding Note')
                     : const Text('Editing Note'),
                 elevation: 5,
@@ -227,11 +227,11 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
                           titleOfField("Tresc"),
                           inputField(trescInputController, 4,
                               'note-description-field'),
-                          if (!widget.isNewNote) ...[
+                          if (!widget._isNewNote) ...[
                             titleOfField("Data"),
-                            readOnlyField(data),
+                            readOnlyField(_data),
                             titleOfField("Stan"),
-                            readOnlyField(stan.toString()),
+                            readOnlyField(_stan.toString()),
                           ],
                           const SizedBox(
                             height: 10,

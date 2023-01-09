@@ -49,12 +49,12 @@ class DatabaseServices {
     );
   }
 
-  Future<void> deleteNote(int id) async {
-    final db = await initializeDB();
-    await db.delete(
-      'notes',
-      where: "id = ?",
-      whereArgs: [id],
-    );
-  }
+  // Future<void> deleteNote(int id) async {
+  //   final db = await initializeDB();
+  //   await db.delete(
+  //     'notes',
+  //     where: "id = ?",
+  //     whereArgs: [id],
+  //   );
+  // }
 }
