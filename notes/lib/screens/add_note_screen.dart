@@ -18,7 +18,8 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
   String nazwa = '';
   String? tresc = '';
   String data = '';
-  int? stan;
+  int stan = 0;
+  bool isPreview = false;
 
   TextEditingController nazwaInputController = TextEditingController();
   TextEditingController trescInputController = TextEditingController();
@@ -32,6 +33,10 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
       stan = widget.note!.stan;
       nazwaInputController.text = nazwa;
       trescInputController.text = tresc ?? "";
+    }
+    if (stan == 2) {
+      // preview mode (archived note)
+      isPreview = true;
     }
     super.initState();
   }
@@ -157,55 +162,92 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return WillPopScope(
-      child: SafeArea(
-        child: Scaffold(
-          resizeToAvoidBottomInset: true,
-          appBar: AppBar(
-            title: widget.isNewNote
-                ? const Text('Adding Note')
-                : const Text('Editing Note'),
-            elevation: 5,
-          ),
-          body: Stack(
-            children: [
-              Container(
-                height: MediaQuery.of(context).size.height,
-                alignment: Alignment.center,
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      titleOfField("Nazwa"),
-                      inputField(nazwaInputController, 1, 'note-name-field'),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      titleOfField("Tresc"),
-                      inputField(
-                          trescInputController, 4, 'note-description-field'),
-                      if (!widget.isNewNote) ...[
+  Widget build(BuildContext context) => isPreview
+      ? SafeArea(
+          child: Scaffold(
+            resizeToAvoidBottomInset: true,
+            appBar: AppBar(
+              title: const Text('Preview of archived note'),
+              elevation: 5,
+            ),
+            body: Stack(
+              children: [
+                Container(
+                  height: MediaQuery.of(context).size.height,
+                  alignment: Alignment.center,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        titleOfField("Nazwa"),
+                        readOnlyField(nazwa),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        titleOfField("Tresc"),
+                        readOnlyField(tresc ?? ""),
                         titleOfField("Data"),
                         readOnlyField(data),
                         titleOfField("Stan"),
                         readOnlyField(stan.toString()),
+                        const SizedBox(
+                          height: 10,
+                        ),
                       ],
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      confirmButton()
-                    ],
+                    ),
                   ),
-                ),
-              )
-            ],
+                )
+              ],
+            ),
           ),
-        ),
-      ),
-      onWillPop: () async {
-        leaveTemplate();
-        return false;
-      },
-    );
-  }
+        )
+      : WillPopScope(
+          child: SafeArea(
+            child: Scaffold(
+              resizeToAvoidBottomInset: true,
+              appBar: AppBar(
+                title: widget.isNewNote
+                    ? const Text('Adding Note')
+                    : const Text('Editing Note'),
+                elevation: 5,
+              ),
+              body: Stack(
+                children: [
+                  Container(
+                    height: MediaQuery.of(context).size.height,
+                    alignment: Alignment.center,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          titleOfField("Nazwa"),
+                          inputField(
+                              nazwaInputController, 1, 'note-name-field'),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          titleOfField("Tresc"),
+                          inputField(trescInputController, 4,
+                              'note-description-field'),
+                          if (!widget.isNewNote) ...[
+                            titleOfField("Data"),
+                            readOnlyField(data),
+                            titleOfField("Stan"),
+                            readOnlyField(stan.toString()),
+                          ],
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          confirmButton()
+                        ],
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+          onWillPop: () async {
+            leaveTemplate();
+            return false;
+          },
+        );
 }
