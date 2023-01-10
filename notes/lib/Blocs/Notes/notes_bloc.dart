@@ -57,6 +57,8 @@ class NotesBloc extends Bloc<NotesEvent, NotesState> {
         emit(NotesLoading());
         // if new properties of note dont meet the filtering requirments it should be removed
         String tresc = event.note.tresc ?? "";
+        //checking if new props meets the filtering requirments
+        // date cant be updated - no need to check that - only name, description and state could have changed
         bool shouldBeAdded =
             (event.note.nazwa.contains(state.filteringText.trim()) ||
                     tresc.contains(state.filteringText.trim())) &&
@@ -78,10 +80,12 @@ class NotesBloc extends Bloc<NotesEvent, NotesState> {
       }
     }));
 
+    //updating filtering options
     on<UpdateFiltering>(((event, emit) async {
       final state = this.state;
       final notesList = await dbService.getAllNotes();
       if (state is NotesLoaded) {
+        // updating only changed filters
         String newDate = event.date != "" ? event.date : state.filteringDate;
         int newState = event.state != 5 ? event.state : state.filteringState;
         String newText = event.text != "" ? event.text : state.filteringText;
@@ -96,8 +100,10 @@ class NotesBloc extends Bloc<NotesEvent, NotesState> {
           matchesTextFiltering = (note.nazwa.contains(newText.trim()) ||
               tresc.contains(newText.trim()));
 
+          //filtering by date
           matchesDateFiltering = formatToShorterDate(note.data) == newDate;
 
+          //filtering by state
           matchesStateFiltering = newState == 3 || note.stan == newState;
 
           return matchesDateFiltering &&
