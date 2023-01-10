@@ -1,4 +1,6 @@
-class Note {
+import 'package:equatable/equatable.dart';
+
+class Note extends Equatable {
   final int? id;
   String nazwa;
   final String data;
@@ -34,4 +36,7 @@ class Note {
   String toString() {
     return 'Note{id : $id, nazwa: $nazwa, data: $data, tresc: $tresc, stan: $stan}';
   }
+
+  @override
+  List<Object?> get props => [id, nazwa, data, tresc, stan];
 }

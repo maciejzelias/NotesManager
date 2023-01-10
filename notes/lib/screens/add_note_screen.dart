@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:notes/databaseServices.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:notes/models/note.dart';
+import 'package:notes/widgets/form/input_field.dart';
+
+import '../Blocs/Notes/notes_bloc.dart';
+import '../helpers/dateHelpers.dart';
 
 class AddingNoteScreen extends StatefulWidget {
   final bool _isNewNote;
@@ -41,74 +44,35 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
     super.initState();
   }
 
-  void trySubmit() async {
-    DatabaseServices db = DatabaseServices();
+  @override
+  void dispose() {
+    nazwaInputController.dispose();
+    trescInputController.dispose();
+    super.dispose();
+  }
+
+  void trySubmit(bool isLeft) {
     if (widget._isNewNote) {
-      DateTime now = DateTime.now();
-      String formattedDate = DateFormat('yyyy-MM-dd - kk:mm').format(now);
-      await db.insertNote(Note(
-          nazwa: nazwaInputController.text,
-          tresc: trescInputController.text != ''
-              ? trescInputController.text
-              : null,
-          data: formattedDate,
-          stan: 1));
+      context.read<NotesBloc>().add(
+            AddNote(
+              note: Note(
+                nazwa: nazwaInputController.text,
+                tresc: trescInputController.text != ''
+                    ? trescInputController.text
+                    : null,
+                data: getFormattedDate(),
+                stan: isLeft ? 0 : 1,
+              ),
+            ),
+          );
     } else {
-      widget._note!.stan = 1;
+      widget._note!.stan = isLeft ? 0 : 1;
       widget._note!.nazwa = nazwaInputController.text;
       widget._note!.tresc =
           trescInputController.text != '' ? trescInputController.text : null;
-      await db.updateNote(widget._note!);
+      context.read<NotesBloc>().add(UpdateNote(note: widget._note!));
     }
     Navigator.of(context).pop();
-  }
-
-  void leaveTemplate() async {
-    DatabaseServices db = DatabaseServices();
-    if (widget._isNewNote) {
-      DateTime now = DateTime.now();
-      String formattedDate = DateFormat('yyyy-MM-dd - kk:mm').format(now);
-      await db.insertNote(Note(
-          nazwa: nazwaInputController.text,
-          tresc: trescInputController.text != ''
-              ? trescInputController.text
-              : null,
-          data: formattedDate,
-          stan: 0));
-    } else {
-      widget._note!.stan = 0;
-      widget._note!.nazwa = nazwaInputController.text;
-      widget._note!.tresc =
-          trescInputController.text != '' ? trescInputController.text : null;
-      await db.updateNote(widget._note!);
-    }
-    Navigator.of(context).pop();
-  }
-
-  Widget inputField(TextEditingController controller, int lines, String key) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30),
-      child: TextField(
-        key: Key(key),
-        maxLines: lines,
-        controller: controller,
-        decoration: InputDecoration(
-            enabledBorder: OutlineInputBorder(
-              borderSide: const BorderSide(
-                color: Colors.white,
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: const BorderSide(
-                color: Colors.blue,
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            fillColor: Colors.grey[200],
-            filled: true),
-      ),
-    );
   }
 
   Widget readOnlyField(String text) {
@@ -153,7 +117,7 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
         ),
-        onPressed: () => trySubmit(),
+        onPressed: () => trySubmit(false),
         label: widget._isNewNote
             ? const Text('Dodaj notatke !')
             : const Text('Zaktualizuj notatkę !'),
@@ -219,14 +183,18 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
                       child: Column(
                         children: [
                           titleOfField("Nazwa"),
-                          inputField(
-                              nazwaInputController, 1, 'note-name-field'),
+                          InputField(
+                              controller: nazwaInputController,
+                              lines: 1,
+                              input_key: 'note-name-field'),
                           const SizedBox(
                             height: 10,
                           ),
                           titleOfField("Tresc"),
-                          inputField(trescInputController, 4,
-                              'note-description-field'),
+                          InputField(
+                              controller: trescInputController,
+                              lines: 4,
+                              input_key: 'note-description-field'),
                           if (!widget._isNewNote) ...[
                             titleOfField("Data"),
                             readOnlyField(_data),
@@ -246,7 +214,7 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
             ),
           ),
           onWillPop: () async {
-            leaveTemplate();
+            trySubmit(true);
             return false;
           },
         );

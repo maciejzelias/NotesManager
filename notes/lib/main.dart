@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:notes/Blocs/Notes/notes_bloc.dart';
 import 'package:notes/screens/notes_screen.dart';
 
 void main() async {
@@ -11,10 +13,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      title: 'Notes App',
-      home: NotesList(),
-      debugShowCheckedModeBanner: false,
-    );
+    return MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => NotesBloc()
+              ..add(
+                LoadNotes(),
+              ),
+          )
+        ],
+        child: MaterialApp(
+          title: 'Notes App',
+          home: NotesList(),
+          debugShowCheckedModeBanner: false,
+        ));
   }
 }
