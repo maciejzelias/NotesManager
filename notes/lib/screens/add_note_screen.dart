@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:notes/models/note.dart';
+import 'package:notes/widgets/form/confirm_button.dart';
+import 'package:notes/widgets/form/field_title.dart';
 import 'package:notes/widgets/form/input_field.dart';
+import 'package:notes/widgets/form/read_only_field.dart';
 
 import '../Blocs/Notes/notes_bloc.dart';
 import '../helpers/dateHelpers.dart';
@@ -75,56 +78,6 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
     Navigator.of(context).pop();
   }
 
-  Widget readOnlyField(String text) {
-    return Container(
-        width: MediaQuery.of(context).size.width,
-        margin: const EdgeInsets.symmetric(horizontal: 30),
-        padding: const EdgeInsets.symmetric(vertical: 15),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.grey[200],
-        ),
-        child: Align(
-          alignment: Alignment.center,
-          child: Text(text),
-        ));
-  }
-
-  Widget titleOfField(String title) {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Text(
-        title,
-        textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 20),
-      ),
-    );
-  }
-
-  Widget confirmButton() {
-    return Container(
-      alignment: Alignment.center,
-      child: ElevatedButton.icon(
-        key: const Key('add-note-button'),
-        icon: const Icon(
-          Icons.send,
-          color: Colors.white,
-          size: 20,
-        ),
-        style: ElevatedButton.styleFrom(
-          primary: Colors.blue,
-          onPrimary: Colors.white,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
-        ),
-        onPressed: () => trySubmit(false),
-        label: widget._isNewNote
-            ? const Text('Dodaj notatke !')
-            : const Text('Zaktualizuj notatkę !'),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) => _isPreview
       ? SafeArea(
@@ -142,17 +95,17 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
-                        titleOfField("Nazwa"),
-                        readOnlyField(_nazwa),
+                        TitleOfField(title: "Nazwa"),
+                        ReadOnlyField(text: _nazwa),
                         const SizedBox(
                           height: 10,
                         ),
-                        titleOfField("Tresc"),
-                        readOnlyField(_tresc ?? ""),
-                        titleOfField("Data"),
-                        readOnlyField(_data),
-                        titleOfField("Stan"),
-                        readOnlyField(_stan.toString()),
+                        TitleOfField(title: "Tresc"),
+                        ReadOnlyField(text: _tresc ?? ""),
+                        TitleOfField(title: "Data"),
+                        ReadOnlyField(text: _data),
+                        TitleOfField(title: "Stan"),
+                        ReadOnlyField(text: _stan.toString()),
                         const SizedBox(
                           height: 10,
                         ),
@@ -182,7 +135,7 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
                     child: SingleChildScrollView(
                       child: Column(
                         children: [
-                          titleOfField("Nazwa"),
+                          TitleOfField(title: "Nazwa"),
                           InputField(
                               controller: nazwaInputController,
                               lines: 1,
@@ -190,21 +143,24 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
                           const SizedBox(
                             height: 10,
                           ),
-                          titleOfField("Tresc"),
+                          TitleOfField(title: "Tresc"),
                           InputField(
                               controller: trescInputController,
                               lines: 4,
                               input_key: 'note-description-field'),
                           if (!widget._isNewNote) ...[
-                            titleOfField("Data"),
-                            readOnlyField(_data),
-                            titleOfField("Stan"),
-                            readOnlyField(_stan.toString()),
+                            TitleOfField(title: "Data"),
+                            ReadOnlyField(text: _data),
+                            TitleOfField(title: "Stan"),
+                            ReadOnlyField(text: _stan.toString()),
                           ],
                           const SizedBox(
                             height: 10,
                           ),
-                          confirmButton()
+                          ConfirmButton(
+                            isNewNote: widget._isNewNote,
+                            submit: trySubmit,
+                          )
                         ],
                       ),
                     ),
