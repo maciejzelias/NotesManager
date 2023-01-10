@@ -30,6 +30,8 @@ class NotesList extends StatelessWidget {
         title: const Text("Notes Manager"),
       ),
       body: Container(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
         child: SingleChildScrollView(
           primary: true,
           child: BlocBuilder<NotesBloc, NotesState>(builder: (context, state) {

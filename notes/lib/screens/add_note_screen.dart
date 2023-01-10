@@ -87,87 +87,80 @@ class _AddingNoteScreenState extends State<AddingNoteScreen> {
               title: const Text('Preview of archived note'),
               elevation: 5,
             ),
-            body: Stack(
-              children: [
-                Container(
-                  height: MediaQuery.of(context).size.height,
-                  alignment: Alignment.center,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        TitleOfField(title: "Nazwa"),
-                        ReadOnlyField(text: _nazwa),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        TitleOfField(title: "Tresc"),
-                        ReadOnlyField(text: _tresc ?? ""),
-                        TitleOfField(title: "Data"),
-                        ReadOnlyField(text: _data),
-                        TitleOfField(title: "Stan"),
-                        ReadOnlyField(text: _stan.toString()),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                      ],
+            body: Container(
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              alignment: Alignment.center,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    TitleOfField(title: "Nazwa"),
+                    ReadOnlyField(text: _nazwa),
+                    const SizedBox(
+                      height: 10,
                     ),
-                  ),
-                )
-              ],
+                    TitleOfField(title: "Tresc"),
+                    ReadOnlyField(text: _tresc ?? ""),
+                    TitleOfField(title: "Data"),
+                    ReadOnlyField(text: _data),
+                    TitleOfField(title: "Stan"),
+                    ReadOnlyField(text: _stan.toString()),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         )
       : WillPopScope(
           child: SafeArea(
             child: Scaffold(
-              resizeToAvoidBottomInset: true,
-              appBar: AppBar(
-                title: widget._isNewNote
-                    ? const Text('Adding Note')
-                    : const Text('Editing Note'),
-                elevation: 5,
-              ),
-              body: Stack(
-                children: [
-                  Container(
-                    height: MediaQuery.of(context).size.height,
-                    alignment: Alignment.center,
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          TitleOfField(title: "Nazwa"),
-                          InputField(
-                              controller: nazwaInputController,
-                              lines: 1,
-                              input_key: 'note-name-field'),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          TitleOfField(title: "Tresc"),
-                          InputField(
-                              controller: trescInputController,
-                              lines: 4,
-                              input_key: 'note-description-field'),
-                          if (!widget._isNewNote) ...[
-                            TitleOfField(title: "Data"),
-                            ReadOnlyField(text: _data),
-                            TitleOfField(title: "Stan"),
-                            ReadOnlyField(text: _stan.toString()),
-                          ],
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          ConfirmButton(
-                            isNewNote: widget._isNewNote,
-                            submit: trySubmit,
-                          )
+                resizeToAvoidBottomInset: true,
+                appBar: AppBar(
+                  title: widget._isNewNote
+                      ? const Text('Adding Note')
+                      : const Text('Editing Note'),
+                  elevation: 5,
+                ),
+                body: Container(
+                  height: MediaQuery.of(context).size.height,
+                  width: MediaQuery.of(context).size.width,
+                  alignment: Alignment.center,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        TitleOfField(title: "Nazwa"),
+                        InputField(
+                            controller: nazwaInputController,
+                            lines: 1,
+                            input_key: 'note-name-field'),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        TitleOfField(title: "Tresc"),
+                        InputField(
+                            controller: trescInputController,
+                            lines: 4,
+                            input_key: 'note-description-field'),
+                        if (!widget._isNewNote) ...[
+                          TitleOfField(title: "Data"),
+                          ReadOnlyField(text: _data),
+                          TitleOfField(title: "Stan"),
+                          ReadOnlyField(text: _stan.toString()),
                         ],
-                      ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        ConfirmButton(
+                          isNewNote: widget._isNewNote,
+                          submit: trySubmit,
+                        )
+                      ],
                     ),
-                  )
-                ],
-              ),
-            ),
+                  ),
+                )),
           ),
           onWillPop: () async {
             trySubmit(true);
